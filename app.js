@@ -76,48 +76,26 @@ function initDBConnection() {
 		// Variables section for an app in the Bluemix console dashboard).
 		// Alternately you could point to a local database here instead of a 
 		// Bluemix service.
-		//dbCredentials.host = "REPLACE ME";
-		//dbCredentials.port = REPLACE ME;
-		//dbCredentials.user = "REPLACE ME";
-		//dbCredentials.password = "REPLACE ME";
-		//dbCredentials.url = "REPLACE ME";
+		dbCredentials.host = "acdba5c6-3dee-421f-85b4-ae99cd97d9e2-bluemix.cloudant.com";
+		dbCredentials.port = 443;
+		dbCredentials.user = "acdba5c6-3dee-421f-85b4-ae99cd97d9e2-bluemix";
+		dbCredentials.password = "ce40d4acf78a848e6aa4cabb21214d46b6ca4dc58ed23d30469e1dacad67aba7";
+		dbCredentials.url = "https://acdba5c6-3dee-421f-85b4-ae99cd97d9e2-bluemix:ce40d4acf78a848e6aa4cabb21214d46b6ca4dc58ed23d30469e1dacad67aba7@acdba5c6-3dee-421f-85b4-ae99cd97d9e2-bluemix.cloudant.com";
 		
-		//cloudant = require('cloudant')(dbCredentials.url);
+		cloudant = require('cloudant')(dbCredentials.url);
 		
 		// check if DB exists if not create
         	//cloudant.db.create(dbCredentials.dbName, function (err, res) {
         	//    if (err) { console.log('could not create db ', err); }
         	//});
             
-        	//db = cloudant.use(dbCredentials.dbName);
+        	db = cloudant.use(dbCredentials.dbName);
 	}
 }
 
 initDBConnection();
 
 app.get('/', routes.index);
-
-function createResponseData(id, name, value, attachments) {
-
-	var responseData = {
-		id : id,
-		name : name,
-		value : value,
-		attachements : []
-	};
-	
-	 
-	attachments.forEach (function(item, index) {
-		var attachmentData = {
-			content_type : item.type,
-			key : item.key,
-			url : '/api/favorites/attach?id=' + id + '&key=' + item.key
-		};
-		responseData.attachements.push(attachmentData);
-		
-	});
-	return responseData;
-}
 
 
 var saveDocument = function(id, name, value, response) {
@@ -140,29 +118,98 @@ var saveDocument = function(id, name, value, response) {
 	});
 	
 }
+//api to get the resource details for a lottery year
+//pass userid and year as params to the api
+app.get('/api/lottery/resource', function(request, response) {
+    
+    if(typeof(request.headers['Access-Control-Allow-Headers']) === 'undefined'){
+        request.headers['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept";
+    }
+    var errMsg;
+    /*var resource = request.query.userid;
+    var lotteryYear = request.query.year;
+    var opts = {key: [resource, lotteryYear]};*/
+    
+    var opts = {key: ['admin', '2016']};
+    try {
+        db.view("useridIndex", "useridx", opts,  function(err, body) {
+            if (!err) {
+                console.log(body);
+                var resultListSize = body.rows.length;
+                if(resultListSize ===0 ) {
+                    console.log("No data found for the year and the resource");
+                    errMsg = "No data found for the year and the resource";
+                    response.send(errMsg);
+                    //response.send({});
+                } else if (resultListSize > 1) {
+                    console.log("Error - more than one document found");
+                    errMsg = "More than one document found. Clean the data in the database";
+                    response.send(errMsg);
+                } else {
+                    console.log("writing single response");
+                    body.rows.forEach(function(document) {
+                        //if(!error) {
+                        console.log("document id - " + document.id);
+                            db.get(document.id, { revs_info: true }, function(err1, doc) {
+                                if(!err1) {
+                                    console.log ("got the doc = " + doc);
+                                    response.send(JSON.stringify(doc));
+                                    //response.end();
+                                } else {
+                                    console.log("err1 - " + err1);
+                                }
+                            });
+                        //} else {
+                          //  console.log("Error - " + error);
+                        //}
+                    });
+                }
+                console.log('ending response...');
+                //response.end();
 
-app.get('/api/favorites/attach', function(request, response) {
-    var doc = request.query.id;
-    var key = request.query.key;
+              //response.write(body);
+              //response.end();
+          }
+          else {
+              errMsg = err;
+              console.log("error........" + err);
+                response.status(500);
+                response.send(errMsg);
+                return;
+            }
+        });
+    } catch(err) {
+        console.log("Error  :: " + err);
+        res.status(600);
+        res.send(err);
+    }
+ 
+});
 
-    db.attachment.get(doc, key, function(err, body) {
-        if (err) {
-            response.status(500);
-            response.setHeader('Content-Type', 'text/plain');
-            response.write('Error: ' + err);
-            response.end();
-            return;
-        }
+//api to update resource data
+app.put('api/lottery/resource', function(request, response) {
+    
+    if(typeof(request.headers['Access-Control-Allow-Headers']) === 'undefined'){
+        request.headers['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept";
+    }
 
-        response.status(200);
-        response.setHeader("Content-Disposition", 'inline; filename="' + key + '"');
-        response.write(body);
-        response.end();
-        return;
+    var _id = request.body.id;
+    var _rev = request.body.rev;
+    
+    if(_rev === "undefined" || _id == "undefined") {
+        console.log('Error - This document doesnt have mandatory attributes for updates. _rev = '+ _rev + "-id = " + _id);
+        return 500;
+    }
+    db.insert(doc, doc.id, function(err, doc) {
+            if(err) {
+                    console.log('Error inserting data\n'+err);
+                    return 500;
+            }
+            return 200;
     });
 });
 
-app.post('/api/favorites/attach', multipartMiddleware, function(request, response) {
+/*app.post('/api/favorites/attach', multipartMiddleware, function(request, response) {
 
 	console.log("Upload File Invoked..");
 	console.log('Request: ' + JSON.stringify(request.headers));
@@ -414,7 +461,7 @@ app.get('/api/favorites', function(request, response) {
 		}
 	});
 
-});
+});*/
 
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
