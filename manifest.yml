@@ -1,0 +1,11 @@
+applications:
+- path: .
+  memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  name: h1blottery
+  host: h1blottery
+  disk_quota: 1024M
+  services:
+  - h1blottery-cloudantNoSQLDB
+  - Single Sign On-qp
