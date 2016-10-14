@@ -1,0 +1,52 @@
+{
+    "lotteryYear": "2016", 
+    "userid":"admin",
+    "resource": 
+            {
+                "serialNum":"201133",
+                "name": "Pankaj Chugh",
+                "email": "abc@abc.com",
+                "notes": "abc/india/ibm",
+                "mgrNotes": "def/india/ibm",
+                "visaStampStatus": "y", 
+                "visaStampDate": "",
+                "band":"7B",
+                "bu":"GBS",
+                "uscisStatus":"PENDADJ",
+                "jrss":"developer",
+                "available": "y"
+            },
+    "petitionAccount": 
+            {
+                "sector": "COM",
+                "account": "Agriculture Canada",
+                "reason": "NEWSCP",
+                "currentDemand": "y",
+                "comments":""
+                },
+    "currentAccount": 
+            {
+                "sector": "COM",
+                "account": "Agriculture Canada",
+                "checkedCurrentAcc": "y",
+                "comments":""
+                },
+    "clientReqData":
+            {
+                "reqOnsiteMonth": "2017-02",
+                "replacementType": "ONSHORE",
+                "pmpNo":""
+            },
+    "interlckDisp":
+            {
+                "sector": "COM",
+                "account": "Agriculture Canada",
+                "reqTravelDt":"",
+                "plnTravelDt":"",
+                "visaApntSchDt": "",
+                "tktBookedDt":"",
+                "actOnsiteDt":"",
+                "comments":""
+            }
+    
+}
